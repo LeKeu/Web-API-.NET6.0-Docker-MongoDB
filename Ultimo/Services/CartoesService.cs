@@ -23,6 +23,9 @@ namespace Ultimo.Services
         public async Task<Cartao> GetAsync(string id) =>
             await _cartaoCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
+        public async Task<Cartao> GetAsyncNumero(string numero) =>
+            await _cartaoCollection.Find(x => x.Numero == numero).FirstOrDefaultAsync();
+
         public async Task CreateAsync(Cartao newCartao) =>
             await _cartaoCollection.InsertOneAsync(newCartao);
 

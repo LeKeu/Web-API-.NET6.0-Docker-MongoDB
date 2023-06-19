@@ -31,8 +31,6 @@ namespace Ultimo.Controllers
             var senhaConfirm = newCartao.SenhaConfirm.ToString();
 
             //System.Diagnostics.Debug.WriteLine(extras.isConsecutive(senha));
-            //if (idade < 18)
-
 
             if (idade >= 18 && senha.Length == 6 && senha != tudoJunto){
                 System.Diagnostics.Debug.WriteLine("Senha Linda");
@@ -96,7 +94,6 @@ namespace Ultimo.Controllers
                         break;
                 }
             }
-                
 
             newCartao.Status = "SOLICITADO";
             newCartao.Cvv = r.Next(100, 1000).ToString();
@@ -232,6 +229,22 @@ namespace Ultimo.Controllers
             else
             {
                 return BadRequest("Cartão não encontrado. Cheque se as informações estão corretas.");
+            }
+        }
+
+        [HttpGet("ConsultarCartão")]
+        public async Task<ActionResult<Cartao>> ConsultarCartao(string numero)
+        {
+            var cartao = await _cartoesService.GetAsyncNumero(numero);
+
+            if (cartao is null)
+            {
+                return BadRequest("Cartão não encontrado. Cheque se as informações estão corretas.");
+            }
+            else
+            {
+                return Ok("Número: "+cartao.Numero+".\nNome Impresso: "+cartao.NomeCartao+"\nLimite: "+cartao.Limite
+                    +"\nStatus: "+cartao.Status+"\nData de Vencimento: "+cartao.DataVenc+"\nCVV: "+cartao.Cvv);
             }
         }
 
