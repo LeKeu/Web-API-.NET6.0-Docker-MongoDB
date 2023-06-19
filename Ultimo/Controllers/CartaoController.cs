@@ -30,13 +30,19 @@ namespace Ultimo.Controllers
             var senha = newCartao.Senha.ToString();
             var senhaConfirm = newCartao.SenhaConfirm.ToString();
 
-            //System.Diagnostics.Debug.WriteLine(extras.isConsecutive(senha));
-
-            if (idade >= 18 && senha.Length == 6 && senha != tudoJunto){
-                System.Diagnostics.Debug.WriteLine("Senha Linda");
-                return true;
+            if (idade >= 18 && senha.Length == 6 && senha != tudoJunto && int.TryParse(senha, out int n) && senha.Distinct().Count() == 6)
+            {
+                bool sequencia = false;
+                for (int i = 0; i < senha.Length - 1; i++)
+                {
+                    if (senha[i] + 1 == senha[i + 1])
+                    {
+                        sequencia = true;
+                    }
+                }
+                return sequencia? false : true;
             }
-
+                
             return false;
         }
 
@@ -95,16 +101,26 @@ namespace Ultimo.Controllers
                 }
             }
 
-            newCartao.Status = "SOLICITADO";
-            newCartao.Cvv = r.Next(100, 1000).ToString();
-            newCartao.Numero = r.Next(1000, 9999).ToString()+" "+ r.Next(1000, 9999).ToString()+" "+ r.Next(1000, 9999).ToString()+" "+ r.Next(1000, 9999).ToString();
+            if (!senha_ok)
+            {
+                aviso += "É necessário que a senha tenha 6 dígitos que não correspondam à data de nascimento, sem números repetidos ou sequenciais.";
+                return BadRequest(aviso); 
+            }
+            else
+            {
+                newCartao.Status = "SOLICITADO";
+                newCartao.Cvv = r.Next(100, 1000).ToString();
+                newCartao.Numero = r.Next(1000, 9999).ToString() + " " + r.Next(1000, 9999).ToString() + " " + r.Next(1000, 9999).ToString() + " " + r.Next(1000, 9999).ToString();
 
-            await _cartoesService.CreateAsync(newCartao);
-            if (!string.IsNullOrEmpty(aviso))
-                return BadRequest(aviso);
+                await _cartoesService.CreateAsync(newCartao);
+                if (!string.IsNullOrEmpty(aviso))
+                    return BadRequest(aviso);
 
-            return Ok("ID do Cartão:" + newCartao.Id + "\n" + "Número do Cartão:" +newCartao.Numero+"\n"+ "Nome a ser impresso:" + newCartao.NomeCartao + "\n" + "Data de Vencimento:" + newCartao.DataVenc + "\n" + "INSTRUÇÕES PARA ATIVAÇÃO\nUtilizar o serviço 'AtivarCartão' e inserir os seguintes dados: número do cartão, agência, conta e senha(" + newCartao.Senha + ")");
-            //return CreatedAtAction(nameof(Get), new {id = newCartao.Id}, newCartao);
+                return Ok("ID do Cartão: " + newCartao.Id + "\n" + "Número do Cartão: " + newCartao.Numero + "\n" + "Nome a ser impresso: " + newCartao.NomeCartao + "\n" + "Data de Vencimento: " + newCartao.DataVenc + "\n" + "\n\nINSTRUÇÕES PARA ATIVAÇÃO\nUtilizar o serviço 'AtivarCartão' e inserir os seguintes dados: número do cartão, agência, conta e senha (" + newCartao.Senha + ")");
+                //return CreatedAtAction(nameof(Get), new {id = newCartao.Id}, newCartao);
+            }
+
+
         }
 
         [HttpPut("{id:length(24)}")]
